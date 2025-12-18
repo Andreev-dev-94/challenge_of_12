@@ -12,43 +12,60 @@ const useGameRecords = () => {
   // Функция загрузки данных лидерборда (ОСНОВНОЕ ИСПРАВЛЕНИЕ ЗДЕСЬ)
   const loadLeaderboardData = useCallback(async () => {
     if (!ysdk) {
-      console.warn('SDK Яндекс недоступен для лидерборда');
-      return null;
+        console.warn('SDK Яндекс недоступен');
+        return null;
     }
 
     try {
-      console.log('🔄 Загрузка данных лидерборда...');
-      
-      // ВАЖНО: Правильный способ получить объект лидерборда - через getLeaderboards()
-      // Этот метод возвращает промис, поэтому нужен await
-      const leaderboardApi = await ysdk.getLeaderboards();
-      console.log('📊 Объект для работы с лидербордом получен:', leaderboardApi);
+        console.log('🔄 Загрузка данных лидерборда...');
+        
+        // ВАЖНО: Универсальный способ получить API лидерборда
+        let leaderboardApi;
+        
+        // Способ 1: Пробуем получить напрямую (как было в старых логах)
+        if (ysdk.leaderboards && typeof ysdk.leaderboards.getEntries === 'function') {
+            leaderboardApi = ysdk.leaderboards;
+            console.log('📊 Используем прямой доступ ysdk.leaderboards');
+        }
+        // Способ 2: Пробуем вызвать как метод (как работало до этого)
+        else if (ysdk.getLeaderboards && typeof ysdk.getLeaderboards === 'function') {
+            leaderboardApi = await ysdk.getLeaderboards();
+            console.log('📊 Используем метод ysdk.getLeaderboards()');
+        }
+        // Способ 3: Ищем в другом месте (на всякий случай)
+        else if (ysdk.leaderboards && ysdk.leaderboards._isActualApi) {
+            leaderboardApi = ysdk.leaderboards;
+            console.log('📊 Используем альтернативный доступ к API');
+        }
+        else {
+            // Для отладки: выводим что вообще есть в ysdk
+            console.error('Не удалось найти API лидерборда. Доступные ключи:', Object.keys(ysdk).filter(k => k.includes('leader') || k.includes('Leader')));
+            throw new Error('API лидерборда не найден');
+        }
 
-      // Проверяем, что получили объект с нужными методами
-      if (!leaderboardApi || typeof leaderboardApi.getLeaderboardEntries !== 'function') {
-        throw new Error('Некорректный объект лидерборда. Доступные методы: ' + (leaderboardApi ? Object.keys(leaderboardApi) : 'null'));
-      }
+        console.log('📊 Объект лидерборда:', leaderboardApi);
 
-      // Загружаем записи лидерборда 'score' (техническое имя с платформы)
-      const entries = await leaderboardApi.getLeaderboardEntries('score', {
-        includeUser: true,
-        quantityTop: 10,  // Количество записей в топе
-        quantityAround: 5 // Количество записей вокруг текущего игрока
-      });
-      
-      console.log('✅ Данные лидерборда загружены:', entries);
-      
-      setLeaderboardData(entries);
-      setPlayerRank(entries.userRank || null);
-      setLeaderboardError(null);
-      
-      return entries;
+        // Загружаем записи лидерборда 'score'
+        const entries = await leaderboardApi.getEntries('score', {
+            includeUser: true,
+            quantityTop: 10,
+            quantityAround: 5
+        });
+        
+        console.log('✅ Данные лидерборда загружены:', entries);
+        
+        // Обработка имени игрока: имя должно быть в entry.player.publicName
+        setLeaderboardData(entries);
+        setPlayerRank(entries.userRank || null);
+        setLeaderboardError(null);
+        
+        return entries;
     } catch (error) {
-      console.error('❌ Ошибка загрузки лидерборда:', error);
-      setLeaderboardError(error.message);
-      return null;
+        console.error('❌ Ошибка загрузки лидерборда:', error);
+        setLeaderboardError(error.message);
+        return null;
     }
-  }, [ysdk]);
+}, [ysdk]);
 
   // Загрузка рекорда при инициализации
   useEffect(() => {

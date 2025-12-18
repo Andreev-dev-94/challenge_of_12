@@ -14,12 +14,12 @@ function LeaderboardModal({ onClose, leaderboardData, playerName, playerRank, re
     try {
       console.log('🔄 Starting score reset...');
       setIsRefreshing(true);
-      
+
       // Вызываем сброс рекорда
       if (resetHighScore) {
         await resetHighScore();
         console.log('✅ Score reset completed');
-        
+
         // Принудительно обновляем данные
         setForceUpdate(prev => prev + 1);
       }
@@ -81,7 +81,7 @@ function LeaderboardModal({ onClose, leaderboardData, playerName, playerRank, re
           <div className="modalContent">
             <div className="leaderboard-header-row">
               <h2>🏆 Таблица лидеров</h2>
-              <button 
+              <button
                 className={`refresh-leaderboard-btn ${isRefreshing ? 'refreshing' : ''}`}
                 onClick={handleRefresh}
                 disabled={isRefreshing}
@@ -90,23 +90,24 @@ function LeaderboardModal({ onClose, leaderboardData, playerName, playerRank, re
                 {isRefreshing ? '⟳' : '↻'}
               </button>
             </div>
-            
+
             <div className="leaderboard-list">
               <div className="leaderboard-header">
                 <span>Место</span>
                 <span>Игрок</span>
                 <span>Очки</span>
               </div>
-              
+
               {leaderboardData.entries && leaderboardData.entries.length > 0 ? (
                 leaderboardData.entries.map((entry, index) => (
-                  <div 
+                  <div
                     key={entry.uniqueID || index}
                     className={`leaderboard-item ${entry.rank === playerRank ? 'current-player' : ''}`}
                   >
                     <span className="leaderboard-rank">#{entry.rank}</span>
                     <span className="leaderboard-name">
-                      {entry.name || 'Аноним'}
+                      {/* Используем publicName из объекта player */}
+                      {entry.player?.publicName || 'Аноним'}
                       {entry.rank === playerRank && ' (Вы)'}
                     </span>
                     <span className="leaderboard-score">{entry.score?.toLocaleString() || 0}</span>
@@ -127,8 +128,8 @@ function LeaderboardModal({ onClose, leaderboardData, playerName, playerRank, re
             )}
 
             <div className="leaderboard-actions">
-              <button 
-                className="refreshButton-leaderboard reset-record-btn" 
+              <button
+                className="refreshButton-leaderboard reset-record-btn"
                 onClick={handleResetRecord}
                 disabled={isRefreshing}
               >
