@@ -1,52 +1,60 @@
 import { useState, useEffect } from 'react';
 
 const useYandexSDK = () => {
-  const [ysdk, setYsdk] = useState(null);
-  const [player, setPlayer] = useState(null);
-  const [playerName, setPlayerName] = useState('Игрок'); // Добавляем отдельное состояние для имени
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+    const [ysdk, setYsdk] = useState(null);
+    const [playerName, setPlayerName] = useState('Игрок');
+    const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const initializeSDK = async () => {
-      try {
-        console.log('Initializing Yandex SDK...');
+    useEffect(() => {
+        const initSDK = async () => {
+            // ВАЖНО: SDK уже загружен через <script src="/sdk.js">
+            // Просто проверяем глобальный объект и инициализируем.
+            if (typeof window.YaGames === 'undefined') {
+                console.warn('SDK Яндекс Игр (YaGames) не загружен.');
+                setIsLoading(false);
+                return;
+            }
 
-        if (typeof window.YaGames === 'undefined') {
-          throw new Error('Yandex SDK not found');
-        }
+            try {
+                // 1. Инициализируем SDK через стандартный метод
+                const sdk = await window.YaGames.init();
+                console.log('✅ Яндекс SDK инициализирован.');
 
-        const sdkInstance = await window.YaGames.init();
-        setYsdk(sdkInstance);
+                // 2. Сообщаем платформе, что игра готова (ОБЯЗАТЕЛЬНЫЙ ШАГ)
+                if (sdk.features?.LoadingAPI?.ready) {
+                    await sdk.features.LoadingAPI.ready();
+                    console.log('✅ LoadingAPI.ready() вызван.');
+                }
 
-        // Получаем данные игрока
-        try {
-          const playerData = await sdkInstance.getPlayer();
-          setPlayer(playerData);
+                // 3. Получаем данные игрока
+                try {
+                    const player = await sdk.getPlayer();
+                    const name = await player.getName();
+                    setPlayerName(name || 'Игрок');
+                    console.log('✅ Имя игрока получено:', name);
+                } catch (playerError) {
+                    console.warn('Не удалось получить имя игрока:', playerError);
+                }
 
-          // Получаем имя игрока
-          const name = await playerData.getName();
-          setPlayerName(name || 'Игрок');
-          console.log('✅ Player data loaded:', name);
-        } catch (playerError) {
-          console.warn('⚠️ Could not load player data:', playerError);
-          setPlayerName('Игрок');
-        }
+                // 4. Сохраняем инстанс SDK в состояние
+                setYsdk(sdk);
 
-        console.log('✅ Yandex SDK initialized successfully');
+            } catch (error) {
+                console.error('❌ Критическая ошибка при инициализации SDK:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-      } catch (err) {
-        console.error('❌ Failed to initialize Yandex SDK:', err);
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+        // Даем странице и скрипту SDK немного времени на загрузку
+        const timer = setTimeout(() => {
+            initSDK();
+        }, 100);
 
-    initializeSDK();
-  }, []);
+        return () => clearTimeout(timer);
+    }, []);
 
-  return { ysdk, isLoading, error, player, playerName }; // Возвращаем готовое имя
+    return { ysdk, playerName, isLoading };
 };
 
 export default useYandexSDK;
