@@ -17,19 +17,19 @@ import LeaderboardModal from '../leaderboardModal/LeaderboardModal';
 import useGameRecords from '../../hooks/useGameRecords';
 
 const GamePage = () => {
-    const { ysdk, isLoading: sdkLoading, playerName } = useYandexSDK();
+    const { ysdk, isLoading: sdkLoading, playerName, isReady } = useYandexSDK();
     const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
     const { reloadEnemyCards, array, enemyPlay, createDeck, currentEnemyCard,
         setCurrentEnemyCard, drawRandomCard, setDeck } = ArrayEnemyCard();
 
     // Используем хук рекордов
-    const { 
-        highScore, 
-        updateHighScore, 
-        resetHighScore, 
-        getLeaderboardData, 
-        leaderboardData, 
+    const {
+        highScore,
+        updateHighScore,
+        resetHighScore,
+        getLeaderboardData,
+        leaderboardData,
         playerRank,
         loadLeaderboardData
     } = useGameRecords();
@@ -54,6 +54,7 @@ const GamePage = () => {
     const [isAdBlocking, setIsAdBlocking] = useState(false);
     const [newRecordRank, setNewRecordRank] = useState(null);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
+    const [minLoadingPassed, setMinLoadingPassed] = useState(false);
 
     // Эффект для показа приветственного модального окна
     useEffect(() => {
@@ -68,7 +69,7 @@ const GamePage = () => {
     useEffect(() => {
         if (gameStatus === 'won' && myScore > 0) {
             console.log(`🎮 Game won with score: ${myScore}, current high: ${highScore}`);
-            
+
             if (myScore > highScore) {
                 const updateRecord = async () => {
                     const result = await updateHighScore(myScore);
@@ -159,6 +160,23 @@ const GamePage = () => {
         setShowLeaderboard(false);
     };
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setMinLoadingPassed(true);
+        }, 3000); // 3000 мс = 3 секунды
+        return () => clearTimeout(timer); // Очистка при размонтировании
+    }, []);
+
+    // Показываем лоадер, если SDK не готов ИЛИ не прошло 3 секунды
+    if (!isReady || !minLoadingPassed) {
+        return (
+            <div className="fullscreen-loader">
+                <div className="loader-spinner"></div>
+                <p>Игра загружается...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="game-container">
             {/* Блокирующий оверлей для рекламы */}
@@ -225,14 +243,14 @@ const GamePage = () => {
                                 <p>{gameStatus === 'won' ? `Очков: ${myScore.toLocaleString()}` : 'Попробуйте еще раз!'}</p>
 
                                 {/* Отображение нового рекорда */}
-                                {gameStatus === 'won'  && myScore >= highScore && (
+                                {gameStatus === 'won' && myScore >= highScore && (
                                     <div className="new-record-info">
                                         <p>🎉 Новый рекорд!</p>
                                         <p>Ваше место в таблице лидеров: <span className="record-rank">#{newRecordRank}</span></p>
                                         <p>Рекорд: {myScore.toLocaleString()} очков</p>
                                     </div>
                                 )}
-                                
+
                                 {/* Отображение текущего рекорда если не побит */}
                                 {gameStatus === 'won' && (!newRecordRank || myScore <= highScore) && (
                                     <div className="standard-win-info">
@@ -258,14 +276,14 @@ const GamePage = () => {
 
             {/* Игровые компоненты */}
             <EnemyPlayField arr={array} />
-            
+
             <ScoreBar
                 gameStatus={gameStatus}
                 myScore={myScore}
                 highScore={highScore}
             />
 
-            <MyPlayField 
+            <MyPlayField
                 enemyPlay={enemyPlay}
                 myCardsCount={myCardsCount}
                 setMyCardsCount={setMyCardsCount}
@@ -285,7 +303,7 @@ const GamePage = () => {
 
             <InfoButton />
 
-            <ResultField 
+            <ResultField
                 myCurrentCard={myCurrentCard}
                 setMyCurrentCard={setMyCurrentCard}
                 createDeck={createDeck}
@@ -296,7 +314,7 @@ const GamePage = () => {
                 setResult={setResult}
                 roundId={roundId}
             />
-            
+
             <BuySaleBar
                 myScore={myScore}
                 setMyScore={setMyScore}
@@ -308,7 +326,7 @@ const GamePage = () => {
                 setLife={setLife}
                 showGameOver={showGameOver}
             />
-            
+
             <PlayedCardsCollection playedCards={playedCards} />
 
             <AdMainButton
