@@ -5,6 +5,7 @@ const useYandexSDK = () => {
     const [playerName, setPlayerName] = useState('Игрок');
     const [isLoading, setIsLoading] = useState(true);
     const [isReady, setIsReady] = useState(false); // Новый флаг: SDK инициализирован И вызван ready()
+    const [lang, setLang] = useState('ru');
 
     useEffect(() => {
         const initSDK = async () => {
@@ -18,6 +19,25 @@ const useYandexSDK = () => {
                 // 1. Инициализируем SDK
                 const sdk = await window.YaGames.init();
                 console.log('✅ Яндекс SDK инициализирован.');
+
+                // 1. Получаем код языка от платформы
+                const platformLang = sdk.environment?.i18n?.lang || 'ru';
+                console.log('🌐 Код языка от платформы:', platformLang);
+
+                // 2. Логика выбора языка игры
+                let gameLang;
+                const ruLangCodes = ['ru', 'be', 'uk']; // Русский, белорусский, украинский
+                if (ruLangCodes.includes(platformLang)) {
+                    gameLang = 'ru'; // Для СНГ - русский
+                } else {
+                    gameLang = 'en'; // Для всех остальных - английский
+                }
+
+                // 3. Сохраняем выбранный язык
+                setLang(gameLang);
+                console.log('✅ Установлен язык игры:', gameLang);
+
+
                 setYsdk(sdk);
 
                 // 2. НЕМЕДЛЕННО сообщаем платформе, что игра готова
@@ -49,7 +69,7 @@ const useYandexSDK = () => {
         initSDK();
     }, []);
 
-    return { ysdk, playerName, isLoading, isReady }; // Возвращаем isReady
+    return { ysdk, playerName, isLoading, isReady, lang };// Возвращаем isReady
 };
 
 export default useYandexSDK;

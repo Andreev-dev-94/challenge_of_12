@@ -16,8 +16,61 @@ import LeaderboardButton from '../leaderboardButton/leaderboardButton';
 import LeaderboardModal from '../leaderboardModal/LeaderboardModal';
 import useGameRecords from '../../hooks/useGameRecords';
 
+
+const GAME_TEXTS = {
+    ru: {
+        welcomeTitle: 'Добро пожаловать в игру!',
+        welcomeHello: 'Привет, ',
+        welcomeReady: 'Готовы к увлекательному испытанию?',
+        featureFight: 'Сражайтесь с противником',
+        featureLives: 'Управляйте своими жизнями',
+        featureAd: 'Получайте бонусы за рекламу',
+        startButton: 'Начать игру',
+        victory: 'Победа!',
+        defeat: 'Поражение',
+        points: 'Очков: ',
+        tryAgain: 'Попробуйте еще раз!',
+        newRecord: '🎉 Новый рекорд!',
+        yourRank: 'Ваше место в таблице: #',
+        currentRecord: 'Текущий рекорд: ',
+        currentRecordPoints: 'очков',
+        toBeatRecord: 'Чтобы побить рекорд, нужно больше',
+        newGameButton: 'Новая игра',
+        loading: 'Игра загружается...',
+        ads: 'Реклама...',
+
+        scoreBarRecord: 'Рекорд: ',
+    },
+    en: {
+        welcomeTitle: 'Welcome to the game!',
+        welcomeHello: 'Hello, ',
+        welcomeReady: 'Ready for an exciting challenge?',
+        featureFight: 'Fight the opponent',
+        featureLives: 'Manage your lives',
+        featureAd: 'Get bonuses for ads',
+        startButton: 'Start Game',
+        victory: 'Victory!',
+        defeat: 'Defeat',
+        points: 'Points: ',
+        tryAgain: 'Try again!',
+        newRecord: '🎉 New record!',
+        yourRank: 'Your leaderboard rank: #',
+        currentRecord: 'Current record: ',
+        currentRecordPoints: 'points',
+        toBeatRecord: 'To beat the record you need more than',
+        newGameButton: 'New Game',
+        loading: 'Game is loading...',
+
+        scoreBarRecord: 'Record: ',
+    }
+};
+
+
+
 const GamePage = () => {
-    const { ysdk, isLoading: sdkLoading, playerName, isReady } = useYandexSDK();
+    const { ysdk, isLoading: sdkLoading, playerName, isReady, lang } = useYandexSDK();
+    const myText = GAME_TEXTS[lang];
+
     const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
     const { reloadEnemyCards, array, enemyPlay, createDeck, currentEnemyCard,
@@ -58,12 +111,14 @@ const GamePage = () => {
 
     // Эффект для показа приветственного модального окна
     useEffect(() => {
-        const welcomeShown = sessionStorage.getItem('welcomeShown');
-        if (!welcomeShown && !sdkLoading) {
-            setShowWelcomeModal(true);
-            sessionStorage.setItem('welcomeShown', 'true');
+        // Показываем окно, когда игра готова (isReady) и не в состоянии "Game Over"
+        if (isReady && !showGameOver) {
+            const timer = setTimeout(() => {
+                setShowWelcomeModal(true);
+            }, 500); // Небольшая задержка в 500мс для плавности
+            return () => clearTimeout(timer);
         }
-    }, [sdkLoading]);
+    }, [isReady, showGameOver]); // Эффект зависит от готовности и статуса игры
 
     // Обработка окончания игры и обновление рекорда
     useEffect(() => {
@@ -172,7 +227,7 @@ const GamePage = () => {
         return (
             <div className="fullscreen-loader">
                 <div className="loader-spinner"></div>
-                <p>Игра загружается...</p>
+                <p>{myText.loading}</p>
             </div>
         );
     }
@@ -184,7 +239,7 @@ const GamePage = () => {
                 <div className="ad-blocking-overlay">
                     <div className="ad-blocking-message">
                         <div className="ad-spinner"></div>
-                        <p>Реклама...</p>
+                        <p>{myText.ads}</p>
                     </div>
                 </div>
             )}
@@ -194,27 +249,27 @@ const GamePage = () => {
                 <div className="modal-overlay">
                     <div className="modal welcome-modal">
                         <div className="modalContent">
-                            <h2>Добро пожаловать в игру!</h2>
+                            <h2>{myText.welcomeTitle}</h2>
                             <div className="modalText">
-                                <p>Привет, <span className="player-name">{playerName}</span>! 🎮</p>
-                                <p>Готовы к увлекательному испытанию?</p>
+                                <p>{myText.welcomeHello} <span className="player-name">{playerName}</span>! 🎮</p>
+                                <p>{myText.welcomeReady}</p>
                                 <div className="welcome-features">
                                     <div className="feature-item">
                                         <span className="feature-icon">⚔️</span>
-                                        <span>Сражайтесь с противником</span>
+                                        <span>{myText.featureFight}</span>
                                     </div>
                                     <div className="feature-item">
                                         <span className="feature-icon">💖</span>
-                                        <span>Управляйте своими жизнями</span>
+                                        <span>{myText.featureLives}</span>
                                     </div>
                                     <div className="feature-item">
                                         <span className="feature-icon">🎬</span>
-                                        <span>Получайте бонусы за рекламу</span>
+                                        <span>{myText.featureAd}</span>
                                     </div>
                                 </div>
                             </div>
                             <button className="refreshButton start-game-btn" onClick={handleStartGame}>
-                                Начать игру
+                                {myText.startButton}
                             </button>
                         </div>
                     </div>
@@ -238,25 +293,25 @@ const GamePage = () => {
                 <div className="modal-overlay">
                     <div className="modal">
                         <div className="modalContent">
-                            <h2>{gameStatus === 'won' ? 'Победа!' : 'Поражение'}</h2>
+                            <h2>{gameStatus === 'won' ? myText.victory : myText.defeat}</h2>
                             <div className="modalText">
-                                <p>{gameStatus === 'won' ? `Очков: ${myScore.toLocaleString()}` : 'Попробуйте еще раз!'}</p>
+                                <p>{gameStatus === 'won' ? `${myText.points} ${myScore.toLocaleString()}` : myText.tryAgain}</p>
 
                                 {/* Отображение нового рекорда */}
                                 {gameStatus === 'won' && myScore >= highScore && (
                                     <div className="new-record-info">
-                                        <p>🎉 Новый рекорд!</p>
-                                        <p>Ваше место в таблице лидеров: <span className="record-rank">#{newRecordRank}</span></p>
-                                        <p>Рекорд: {myScore.toLocaleString()} очков</p>
+                                        <p>{myText.newRecord}</p>
+                                        <p>{myText.yourRank} <span className="record-rank">#{newRecordRank}</span></p>
+                                        <p>{`${myText.currentRecord} ${myScore.toLocaleString()} ${myText.currentRecordPoints}`}</p>
                                     </div>
                                 )}
 
                                 {/* Отображение текущего рекорда если не побит */}
                                 {gameStatus === 'won' && (!newRecordRank || myScore <= highScore) && (
                                     <div className="standard-win-info">
-                                        <p>Текущий рекорд: {highScore.toLocaleString()} очков</p>
+                                        <p>{`${myText.currentRecord} ${highScore.toLocaleString()} ${myText.currentRecordPoints}`}</p>
                                         {myScore < highScore && (
-                                            <p>Чтобы побить рекорд, нужно набрать больше {highScore.toLocaleString()} очков</p>
+                                            <p>{`${myText.toBeatRecord} ${highScore.toLocaleString()} ${myText.currentRecordPoints}`}</p>
                                         )}
                                     </div>
                                 )}
@@ -267,7 +322,7 @@ const GamePage = () => {
                                 roundId={roundId}
                             />
                             <button className="refreshButton" onClick={resetGame}>
-                                Новая игра
+                                {myText.newGameButton}
                             </button>
                         </div>
                     </div>
@@ -281,6 +336,7 @@ const GamePage = () => {
                 gameStatus={gameStatus}
                 myScore={myScore}
                 highScore={highScore}
+                myText={myText}
             />
 
             <MyPlayField

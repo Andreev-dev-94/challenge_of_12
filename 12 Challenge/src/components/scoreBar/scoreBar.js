@@ -1,7 +1,7 @@
 import './scoreBar.css';
 import { useEffect, useState } from 'react';
 
-function ScoreBar({ gameStatus, myScore, highScore }) {
+function ScoreBar({ gameStatus, myScore, highScore, myText}) {
     const [isNewRecord, setIsNewRecord] = useState(false);
 
     // Анимация при новом рекорде
@@ -17,7 +17,7 @@ function ScoreBar({ gameStatus, myScore, highScore }) {
         <div className='score-bar-main'>
             <div className='score-bar-container'>
                 <div className={`score-display ${isNewRecord ? 'record-pulse' : ''}`}>
-                    <span className="score-label">Рекорд:</span>
+                    <span className="score-label">{myText.scoreBarRecord}</span>
                     <span className="score-value">{highScore.toLocaleString()}</span>
                 </div>
             </div>
