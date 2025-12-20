@@ -1,59 +1,7 @@
-/* import './infoButton.css';
-import { useState } from 'react';
-
-function InfoButton() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-  };
-
-  return (
-    <>
-      <button className="neon-info-btn" onClick={toggleModal}>
-        <span className="neon-icon">ℹ</span>
-        <span className="neon-text">Info</span>
-        <span className="neon-glow"></span>
-      </button>
-
-      {isModalOpen && (
-        <div className="info-modal-overlay">
-          <div className="info-modal">
-            <div className="info-modal-content">
-              <h2>Правила игры</h2>
-              <p>
-                Это игра "Камень-Ножницы-Бумага" с элементами стратегии. 
-                Ваша цель - победить все карты противника или набрать максимальное количество очков.
-              </p>
-              <p>
-                - Камень побеждает Ножницы<br />
-                - Ножницы побеждают Бумагу<br />
-                - Бумага побеждает Камень
-              </p>
-              <p>
-                Используйте кнопки покупки для увеличения бонуса или восстановления здоровья.
-              </p>
-              <button 
-                className="neon-close-btn" 
-                onClick={toggleModal}
-              >
-                Закрыть
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-export default InfoButton; */
-
-
 import './infoButton.css';
 import { useState } from 'react';
 
-function InfoButton() {
+function InfoButton({ myText }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const toggleModal = () => {
@@ -65,7 +13,7 @@ function InfoButton() {
       <div className='info_butt_cont'>
         <button className="neon-info-btn" onClick={toggleModal}>
           <span className="neon-info-icon">ℹ</span>
-          <span className="neon-info-text">Info</span>
+          <span className="neon-info-text">{myText.infoButton}</span>
           <span className="neon-info-glow"></span>
         </button>
       </div>
@@ -74,57 +22,51 @@ function InfoButton() {
         <div className="info-modal-overlay">
           <div className="info-modal">
             <div className="info-modal-content">
-              <h2>Правила игры "Камень-Ножницы-Бумага: Выживание"</h2>
+              <h2>{myText.rules}</h2>
 
               <div className="rules-section">
-                <h3>⚡ Основные правила</h3>
+                <h3>{myText.rulesTitle}</h3>
                 <ul>
-                  <li>Классическая игра <strong>"Камень-Ножницы-Бумага"</strong> с элементами выживания</li>
-                  <li>Игра продолжается максимум <strong>12 раундов</strong></li>
-                  <li>Раунд начинается в момент выбора игроком карты, которую он хочет разыграть</li>
-                  <li>Всего на игру выдается <strong>12 карт</strong> (по 4 карты каждого вида)</li>
-                  <li>В начале игры у игрока <strong>3 жизни</strong> (звезды)</li>
-                  <li>Поражение в раунде = потеря 1 жизни</li>
-                  <li>Ноль жизней = конец игры</li>
+                    {myText.rulesList.map((item, index) => (
+                        <li key={index} dangerouslySetInnerHTML={{ __html: item }} />
+                    ))}
                 </ul>
-              </div>
-
-              <div className="rules-section">
-                <h3>🎯 Цель игры</h3>
-                <p>Продержаться 12 раундов, сохранив хотя бы 1 жизнь, и набрать при этом максимально возможное количество баллов.</p>
-              </div>
-
-              <div className="rules-section">
-                <h3>💰 Система баллов</h3>
+            </div>
+            
+            <div className="rules-section">
+                <h3>{myText.goalTitle}</h3>
+                <p>{myText.goalText}</p>
+            </div>
+            
+            <div className="rules-section">
+                <h3>{myText.pointsTitle}</h3>
                 <ul>
-                  <li>За победу в раунде начисляется <strong>1000 баллов</strong>, а также увеличивается <strong>множитель</strong></li>
-                  <li><strong>Динамический множитель</strong>: увеличивается и уменьшается в зависимости от действий игрока</li>
-                  <li><strong>1000 баллов</strong>, начисленные за победу, <strong>умножаются на текущий множитель</strong></li>
-                  <li><strong>Стратегия</strong>: для достижения максимального счета важна серия побед</li>
+                    {myText.pointsList.map((item, index) => (
+                        <li key={index} dangerouslySetInnerHTML={{ __html: item }} />
+                    ))}
                 </ul>
-              </div>
-
-              <div className="rules-section">
-                <h3>🛠️ Управление ресурсами</h3>
+            </div>
+            
+            <div className="rules-section">
+                <h3>{myText.resourcesTitle}</h3>
                 <ul>
-                  <li><strong>Доступна покупка и продажа жизней</strong> во время игры</li>
-                  <li><strong>Динамические цены</strong>: зависят от текущего счета</li>
-                  <li><strong>Коллекция отыгранных карт</strong>: для наглядного анализа хода игры и дальнейшего планирования</li>
-                  <li>Если победа в игре неминуема, а у вас остались лишние звезды - продайте их до розыгрыша последнего раунда по хорошей цене</li>
+                    {myText.resourcesList.map((item, index) => (
+                        <li key={index} dangerouslySetInnerHTML={{ __html: item }} />
+                    ))}
                 </ul>
-              </div>
-
-              <div className="rules-section">
-                <h3>💡 Секрет победы</h3>
-                <p>Никто еще не выиграл 12 раундов подряд! Ключ к успеху — баланс между агрессией и сохранением жизней. <br></br>Удачи!</p>
-                <p className="final-challenge"><strong>Ваша задача:</strong> выжить и побить рекорд! 🏆</p>
-              </div>
+            </div>
+            
+            <div className="rules-section">
+                <h3>{myText.secretTitle}</h3>
+                <p>{myText.secretText}</p>
+                <p className="final-challenge" dangerouslySetInnerHTML={{ __html: myText.challengeText }} />
+            </div>
 
               <button
                 className="neon-close-btn"
                 onClick={toggleModal}
               >
-                Закрыть
+                {myText.close}
               </button>
             </div>
           </div>
