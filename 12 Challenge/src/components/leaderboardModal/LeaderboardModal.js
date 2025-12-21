@@ -1,7 +1,7 @@
 import './leaderboardModal.css';
 import { useState, useEffect } from 'react';
 
-function LeaderboardModal({ onClose, leaderboardData, playerName, playerRank, resetHighScore, loadLeaderboardData }) {
+function LeaderboardModal({ onClose, leaderboardData, playerName, playerRank, resetHighScore, loadLeaderboardData, myText }) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [forceUpdate, setForceUpdate] = useState(0);
@@ -56,10 +56,10 @@ function LeaderboardModal({ onClose, leaderboardData, playerName, playerRank, re
       <div className="modal-overlay">
         <div className="modal leaderboard-modal">
           <div className="modalContent">
-            <h2>🏆 Таблица лидеров</h2>
-            <p>Загрузка данных...</p>
+            <h2>{myText.leaderboardTitle}</h2>
+            <p>{myText.loadingData}</p>
             <button className="refreshButton-leaderboard" onClick={onClose}>
-              Закрыть
+              {myText.closeButton}
             </button>
           </div>
         </div>
@@ -80,12 +80,12 @@ function LeaderboardModal({ onClose, leaderboardData, playerName, playerRank, re
         <div className="modal leaderboard-modal">
           <div className="modalContent">
             <div className="leaderboard-header-row">
-              <h2>🏆 Таблица лидеров</h2>
+              <h2>{myText.leaderboardTitle}</h2>
               <button
                 className={`refresh-leaderboard-btn ${isRefreshing ? 'refreshing' : ''}`}
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                title="Обновить"
+                title={myText.refreshTitle}
               >
                 {isRefreshing ? '⟳' : '↻'}
               </button>
@@ -93,9 +93,9 @@ function LeaderboardModal({ onClose, leaderboardData, playerName, playerRank, re
 
             <div className="leaderboard-list">
               <div className="leaderboard-header">
-                <span>Место</span>
-                <span>Игрок</span>
-                <span>Очки</span>
+                <span>{myText.placeHeader}</span>
+                <span>{myText.playerHeader}</span>
+                <span>{myText.pointsHeader}</span>
               </div>
 
               {leaderboardData.entries && leaderboardData.entries.length > 0 ? (
@@ -107,23 +107,23 @@ function LeaderboardModal({ onClose, leaderboardData, playerName, playerRank, re
                     <span className="leaderboard-rank">#{entry.rank}</span>
                     <span className="leaderboard-name">
                       {/* Используем publicName из объекта player */}
-                      {entry.player?.publicName || 'Аноним'}
-                      {entry.rank === playerRank && ' (Вы)'}
+                      {entry.player?.publicName || myText.anonymous}
+                      {entry.rank === playerRank && myText.youMarker}
                     </span>
                     <span className="leaderboard-score">{entry.score?.toLocaleString() || 0}</span>
                   </div>
                 ))
               ) : (
                 <div className="no-data-message">
-                  <p>Нет данных для отображения</p>
+                  <p>{myText.noData}</p>
                 </div>
               )}
             </div>
 
             {playerRank && (
               <div className="player-rank-info">
-                <p>Ваше место: <span className="rank-number">#{playerRank}</span></p>
-                <p>Ваш рекорд: <span className="rank-number">{currentPlayerScore.toLocaleString()}</span></p>
+                <p>{myText.yourPlace} <span className="rank-number">#{playerRank}</span></p>
+                <p>{myText.yourRecord} <span className="rank-number">{currentPlayerScore.toLocaleString()}</span></p>
               </div>
             )}
 
@@ -133,10 +133,10 @@ function LeaderboardModal({ onClose, leaderboardData, playerName, playerRank, re
                 onClick={handleResetRecord}
                 disabled={isRefreshing}
               >
-                {isRefreshing ? 'Обновление...' : 'Сбросить рекорд'}
+                {isRefreshing ? myText.updating : myText.resetRecordButton}
               </button>
               <button className="refreshButton-leaderboard" onClick={onClose}>
-                Закрыть
+                {myText.closeButton}
               </button>
             </div>
           </div>
@@ -148,23 +148,26 @@ function LeaderboardModal({ onClose, leaderboardData, playerName, playerRank, re
         <div className="modal-overlay">
           <div className="modal reset-confirm-modal">
             <div className="modalContent">
-              <h2>Сброс рекорда</h2>
+              <h2>{myText.resetConfirmTitle}</h2>
               <div className="modalText">
-                <p>Вы уверены, что хотите сбросить рекорд?</p>
-                <p>Это действие нельзя отменить. Все ваши результаты будут удалены.</p>
+                <p>{myText.resetConfirmQuestion}</p>
+                <p>{myText.resetConfirmWarning}</p>
                 <div className="warning-message">
-                  ⚠️ Это повлияет на вашу позицию в таблице лидеров
+                  {myText.resetConfirmAffect}
                 </div>
-                <div className="current-score-info">
-                  Текущий рекорд: <strong>{currentPlayerScore.toLocaleString()}</strong> очков
-                </div>
+                <div 
+                  className="current-score-info" 
+                  dangerouslySetInnerHTML={{ 
+                    __html: myText.resetCurrentScore(currentPlayerScore.toLocaleString()) 
+                  }}
+                />
               </div>
               <div className="reset-confirm-actions">
                 <button className="refreshButton confirm-reset-btn" onClick={confirmReset}>
-                  Да, сбросить
+                  {myText.confirmResetButton}
                 </button>
                 <button className="refreshButton cancel-reset-btn" onClick={cancelReset}>
-                  Отмена
+                  {myText.cancelResetButton}
                 </button>
               </div>
             </div>

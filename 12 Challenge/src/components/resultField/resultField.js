@@ -4,7 +4,7 @@ import scissorsImg from '../../resources/img/scissors.png';
 import './resultField.css';
 import { useEffect, useState } from 'react';
 
-const ResultField = ({ roundId, myCurrentCard, currentEnemyCard, result, setResult }) => {
+const ResultField = ({ roundId, myCurrentCard, currentEnemyCard, result, setResult, myText}) => {
     const [showCards, setShowCards] = useState(false);
 
     const cardImages = {
@@ -14,10 +14,10 @@ const ResultField = ({ roundId, myCurrentCard, currentEnemyCard, result, setResu
     };
 
     const resultRound = {
-        victory: 'Победа',
-        draw: 'Ничья',
-        defeat: 'Поражение',
-        start: 'Выберите карту',
+        victory: myText.resultFIeldVictory,
+        draw: myText.resultFIeldDraw,
+        defeat: myText.resultFIeldDefeat,
+        start: myText.resultFIeldChoose,
     };
 
     useEffect(() => {

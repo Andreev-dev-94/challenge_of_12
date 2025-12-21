@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useYandexSDK from '../../hooks/useYandexSDK';
 
-const AdButton = ({ setShowGameOver, setLife, roundId }) => {
+const AdButton = ({ setShowGameOver, setLife, roundId, myText }) => {
   const { ysdk, isLoading } = useYandexSDK();
   const [isAdLoading, setIsAdLoading] = useState(false);
   const isProcessingRef = useRef(false);
@@ -82,7 +82,7 @@ const AdButton = ({ setShowGameOver, setLife, roundId }) => {
           margin: '10px auto' // Добавьте это для отступов
         }}
       >
-        {isAdLoading ? 'Реклама загружается...' : 'Показать рекламу за награду'}
+        {isAdLoading ? myText.ads : myText.adsShow}
       </button>
     );
   }

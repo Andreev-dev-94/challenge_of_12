@@ -1,7 +1,7 @@
 import './leaderboardButton.css';
 import useYandexSDK from '../../hooks/useYandexSDK';
 
-function LeaderboardButton({ onShowLeaderboard }) {
+function LeaderboardButton({ onShowLeaderboard, myText }) {
   const { ysdk, isLoading } = useYandexSDK();
 
   const handleShowLeaderboard = async () => {
@@ -27,7 +27,7 @@ function LeaderboardButton({ onShowLeaderboard }) {
           <span className="neon-text"></span>
           <span className="neon-glow"></span>
         </button>
-        <span className="tooltip-text-leaderboard">Таблица лидеров</span>
+        <span className="tooltip-text-leaderboard">{myText.btnLeaderbord}</span>
       </div>
     </div>
   );

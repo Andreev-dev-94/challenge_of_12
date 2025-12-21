@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import './adMainButton.css';
 import useYandexSDK from '../../hooks/useYandexSDK';
 
-function AdMainButton({ life, setLife, isAdUsed, setIsAdUsed, setIsAdBlocking }) {
+function AdMainButton({ life, setLife, isAdUsed, setIsAdUsed, setIsAdBlocking, myText }) {
   const { ysdk, isLoading } = useYandexSDK();
   const [isAdLoading, setIsAdLoading] = useState(false);
   const isProcessingRef = useRef(false);
@@ -90,7 +90,7 @@ function AdMainButton({ life, setLife, isAdUsed, setIsAdUsed, setIsAdBlocking })
       setIsAdLoading(false);
       setIsAdBlocking(false);
       isProcessingRef.current = false;
-      
+
       // Если реклама начала показ (adShownRef.current = true),
       // но награда не выдана, все равно помечаем кнопку как использованную
       // для предотвращения частых запросов
@@ -98,22 +98,22 @@ function AdMainButton({ life, setLife, isAdUsed, setIsAdUsed, setIsAdBlocking })
         console.log('🛡️ Реклама была показана, блокируем кнопку до следующей игры');
         setIsAdUsed(true);
       }
-      
+
       console.log('🔄 Обработка рекламы завершена');
     }
   };
 
   const getTooltipText = () => {
     if (isAdUsed) {
-      return 'Бонус использован в этой игре';
+      return myText.adBonusUsed;
     }
     if (life >= 3) {
-      return 'Максимальное количество жизней';
+      return myText.maxLivesReached;
     }
     if (isAdLoading) {
-      return 'Реклама загружается...';
+      return myText.ads;
     }
-    return 'Получить жизнь за рекламу';
+    return myText.getLifeForAd;
   };
 
   if (isLoading) return null;

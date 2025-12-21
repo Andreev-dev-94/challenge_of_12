@@ -4,7 +4,7 @@ import Star from '../star/star';
 import { useEffect } from 'react';
 
 const MyPlayField = ({ myCardsCount, setMyCardsCount, enemyPlay, setMyCurrentCard, myCurrentCard,
-    drawRandomCard, life, setLife, result, setResult, setRoundId, showGameOver,roundId}) => {
+    drawRandomCard, life, setLife, result, setResult, setRoundId, showGameOver,roundId, myText}) => {
 
     function play(cardType) {
         if (myCardsCount[cardType] > 0 && !showGameOver) {
@@ -27,7 +27,7 @@ const MyPlayField = ({ myCardsCount, setMyCardsCount, enemyPlay, setMyCurrentCar
     // изменение счетчика количетсва жизней
 
     useEffect(() => {
-        if (result === 'Поражение') {
+        if (result === myText.resultFIeldDefeat) {
             setLife(prev => prev - 1);
         }
     }, [result, setLife]);

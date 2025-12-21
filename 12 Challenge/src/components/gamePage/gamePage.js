@@ -1,6 +1,6 @@
 import './gamePage.css';
 import EnemyPlayField from '../enemyPlayField/enemyPlayField';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react'; // Добавили useRef
 import MyPlayField from '../myPlayField/myPlayField';
 import ScoreBar from '../scoreBar/scoreBar';
 import ArrayEnemyCard from '../arrayEnemyCards/arrayEnemyCards';
@@ -15,137 +15,16 @@ import useYandexSDK from '../../hooks/useYandexSDK';
 import LeaderboardButton from '../leaderboardButton/leaderboardButton';
 import LeaderboardModal from '../leaderboardModal/LeaderboardModal';
 import useGameRecords from '../../hooks/useGameRecords';
-
-
-const GAME_TEXTS = {
-    ru: {
-        welcomeTitle: 'Добро пожаловать в игру!',
-        welcomeHello: 'Привет, ',
-        welcomeReady: 'Готовы к увлекательному испытанию?',
-        featureFight: 'Сражайтесь с противником',
-        featureLives: 'Управляйте своими жизнями',
-        featureAd: 'Получайте бонусы за рекламу',
-        startButton: 'Начать игру',
-        victory: 'Победа!',
-        defeat: 'Поражение',
-        points: 'Очков: ',
-        tryAgain: 'Попробуйте еще раз!',
-        newRecord: '🎉 Новый рекорд!',
-        yourRank: 'Ваше место в таблице: #',
-        currentRecord: 'Текущий рекорд: ',
-        currentRecordPoints: 'очков',
-        toBeatRecord: 'Чтобы побить рекорд, нужно больше',
-        newGameButton: 'Новая игра',
-        loading: 'Игра загружается...',
-        ads: 'Реклама...',
-        close: 'Закрыть',
-
-        scoreBarRecord: 'Рекорд: ',
-
-        reloadButton: 'Новая игра',
-
-        infoButton: 'Помощь',
-
-        rules: 'Правила игры "12 Challenge"',
-        rulesTitle: '⚡ Основные правила',
-        rulesList: [
-            'Классическая игра <strong>"Камень-Ножницы-Бумага"</strong> с элементами выживания',
-            'Игра продолжается максимум <strong>12 раундов</strong>',
-            'Раунд начинается в момент выбора игроком карты, которую он хочет разыграть',
-            'Всего на игру выдается <strong>12 карт</strong> (по 4 карты каждого вида)',
-            'В начале игры у игрока <strong>3 жизни</strong> (звезды)',
-            'Поражение в раунде = потеря 1 жизни',
-            'Ноль жизней = конец игры'
-        ],
-        goalTitle: '🎯 Цель игры',
-        goalText: 'Продержаться 12 раундов, сохранив хотя бы 1 жизнь, и набрать при этом максимально возможное количество баллов.',
-        pointsTitle: '💰 Система баллов',
-        pointsList: [
-            'За победу в раунде начисляется <strong>1000 баллов</strong>, а также увеличивается <strong>множитель</strong>',
-            '<strong>Динамический множитель</strong>: увеличивается и уменьшается в зависимости от действий игрока',
-            '<strong>1000 баллов</strong>, начисленные за победу, <strong>умножаются на текущий множитель</strong>',
-            '<strong>Стратегия</strong>: для достижения максимального счета важна серия побед'
-        ],
-        resourcesTitle: '🛠️ Управление ресурсами',
-        resourcesList: [
-            '<strong>Доступна покупка и продажа жизней</strong> во время игры',
-            '<strong>Динамические цены</strong>: зависят от текущего счета',
-            '<strong>Коллекция отыгранных карт</strong>: для наглядного анализа хода игры и дальнейшего планирования',
-            'Если победа в игре неминуема, а у вас остались лишние звезды - продайте их до розыгрыша последнего раунда по хорошей цене'
-        ],
-        secretTitle: '💡 Секрет победы',
-        secretText: 'Никто еще не выиграл 12 раундов подряд! Ключ к успеху — баланс между агрессией и сохранением жизней.',
-        challengeText: '<strong>Ваша задача:</strong> выжить и побить рекорд! 🏆',
-
-    },
-    en: {
-        welcomeTitle: 'Welcome to the game!',
-        welcomeHello: 'Hello, ',
-        welcomeReady: 'Ready for an exciting challenge?',
-        featureFight: 'Fight the opponent',
-        featureLives: 'Manage your lives',
-        featureAd: 'Get bonuses for ads',
-        startButton: 'Start Game',
-        victory: 'Victory!',
-        defeat: 'Defeat',
-        points: 'Points: ',
-        tryAgain: 'Try again!',
-        newRecord: '🎉 New record!',
-        yourRank: 'Your leaderboard rank: #',
-        currentRecord: 'Current record: ',
-        currentRecordPoints: 'points',
-        toBeatRecord: 'To beat the record you need more than',
-        newGameButton: 'New Game',
-        loading: 'Game is loading...',
-        ads: 'Ad is loading...',
-        close: 'Close',
-
-        scoreBarRecord: 'Record: ',
-
-        reloadButton: 'Restart',
-
-        infoButton: 'Info',
-
-        rules: 'The rules of the game "12 Challenge"',
-        rulesTitle: '⚡ Main Rules',
-        rulesList: [
-            'Classic <strong>"Rock-Paper-Scissors"</strong> game with survival elements',
-            'The game lasts a maximum of <strong>12 rounds</strong>',
-            'A round begins when the player chooses a card to play',
-            'A total of <strong>12 cards</strong> are dealt for the game (4 of each type)',
-            'At the start of the game, the player has <strong>3 lives</strong> (stars)',
-            'Losing a round = losing 1 life',
-            'Zero lives = game over'
-        ],
-        goalTitle: '🎯 Game Goal',
-        goalText: 'Survive 12 rounds while keeping at least 1 life, and score the highest possible number of points.',
-        pointsTitle: '💰 Points System',
-        pointsList: [
-            'Winning a round awards <strong>1000 points</strong> and increases the <strong>multiplier</strong>',
-            '<strong>Dynamic multiplier</strong>: increases and decreases depending on player actions',
-            'The <strong>1000 points</strong> awarded for a win are <strong>multiplied by the current multiplier</strong>',
-            '<strong>Strategy</strong>: achieving a high score requires a winning streak'
-        ],
-        resourcesTitle: '🛠️ Resource Management',
-        resourcesList: [
-            '<strong>Lives can be bought and sold</strong> during the game',
-            '<strong>Dynamic prices</strong>: depend on the current score',
-            '<strong>Collection of played cards</strong>: for visual analysis of the game progress and further planning',
-            'If victory is inevitable and you have extra stars left - sell them before playing the final round at a good price'
-        ],
-        secretTitle: '💡 Secret to Victory',
-        secretText: 'No one has won 12 rounds in a row yet! The key to success is balancing aggression with life preservation.',
-        challengeText: '<strong>Your challenge:</strong> survive and beat the record! 🏆',
-    }
-};
-
-
+import { GAME_TEXTS } from '../locales/gameTexts';
 
 const GamePage = () => {
     const { ysdk, isLoading: sdkLoading, playerName, isReady, lang } = useYandexSDK();
-    const myText = GAME_TEXTS[lang];
+    const myText = GAME_TEXTS[lang] || GAME_TEXTS['ru']; // fallback на русский
 
     const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+    
+    // 🔧 ИСПРАВЛЕНИЕ: Используем useRef вместо sessionStorage
+    const hasShownWelcomeRef = useRef(false);
 
     const { reloadEnemyCards, array, enemyPlay, createDeck, currentEnemyCard,
         setCurrentEnemyCard, drawRandomCard, setDeck } = ArrayEnemyCard();
@@ -183,16 +62,19 @@ const GamePage = () => {
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [minLoadingPassed, setMinLoadingPassed] = useState(false);
 
-    // Эффект для показа приветственного модального окна
+    // 🔧 ИСПРАВЛЕННЫЙ useEffect для показа приветственного модального окна
     useEffect(() => {
-        // Показываем окно, когда игра готова (isReady) и не в состоянии "Game Over"
-        if (isReady && !showGameOver) {
+        // Показываем, если игра готова, не в GameOver и модалка еще не была показана в этом монтировании
+        if (isReady && !showGameOver && !hasShownWelcomeRef.current) {
             const timer = setTimeout(() => {
                 setShowWelcomeModal(true);
-            }, 500); // Небольшая задержка в 500мс для плавности
+                hasShownWelcomeRef.current = true; // Помечаем как показанную
+                console.log('✅ Приветственная модалка показана (первый раз после монтирования)');
+            }, 500); // Небольшая задержка
+            
             return () => clearTimeout(timer);
         }
-    }, [isReady, showGameOver]); // Эффект зависит от готовности и статуса игры
+    }, [isReady, showGameOver]);
 
     // Обработка окончания игры и обновление рекорда
     useEffect(() => {
@@ -259,6 +141,7 @@ const GamePage = () => {
     };
 
     const resetGame = () => {
+        setShowWelcomeModal(false); // Только скрываем модалку, не сбрасываем ref
         resetMyCards();
         reloadEnemyCards();
         setGameStatus(null);
@@ -359,6 +242,7 @@ const GamePage = () => {
                     playerRank={playerRank}
                     resetHighScore={resetHighScore}
                     loadLeaderboardData={loadLeaderboardData}
+                    myText={myText}
                 />
             )}
 
@@ -394,6 +278,7 @@ const GamePage = () => {
                                 setShowGameOver={setShowGameOver}
                                 setLife={setLife}
                                 roundId={roundId}
+                                myText={myText}
                             />
                             <button className="refreshButton" onClick={resetGame}>
                                 {myText.newGameButton}
@@ -427,14 +312,17 @@ const GamePage = () => {
                 setRoundId={setRoundId}
                 showGameOver={showGameOver}
                 roundId={roundId}
+                myText={myText}
             />
 
             <ReloadButton 
-            myText={myText}
-            resetGame={resetGame} />
+                myText={myText}
+                resetGame={resetGame} 
+            />
 
             <InfoButton 
-            myText={myText}/>
+                myText={myText}
+            />
 
             <ResultField
                 myCurrentCard={myCurrentCard}
@@ -446,6 +334,7 @@ const GamePage = () => {
                 result={result}
                 setResult={setResult}
                 roundId={roundId}
+                myText={myText}
             />
 
             <BuySaleBar
@@ -458,6 +347,7 @@ const GamePage = () => {
                 life={life}
                 setLife={setLife}
                 showGameOver={showGameOver}
+                myText={myText}
             />
 
             <PlayedCardsCollection playedCards={playedCards} />
@@ -468,9 +358,12 @@ const GamePage = () => {
                 isAdUsed={isAdUsed}
                 setIsAdUsed={setIsAdUsed}
                 setIsAdBlocking={setIsAdBlocking}
+                myText={myText}
             />
 
-            <LeaderboardButton onShowLeaderboard={handleOpenLeaderboard} />
+            <LeaderboardButton 
+            onShowLeaderboard={handleOpenLeaderboard} 
+            myText={myText}/>
         </div>
     )
 }
