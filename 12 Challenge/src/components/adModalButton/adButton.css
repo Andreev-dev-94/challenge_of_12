@@ -1,0 +1,9 @@
+.ad-explanation-text {
+    margin-bottom: min(1.5vmin, 15px);
+    font-size: min(2.2vmin, 1.1rem);
+    line-height: 1.4;
+    color: #fff;
+    text-shadow: 0 0 min(0.2vmin, 2px) rgba(0, 255, 255, 0.5);
+    text-align: center;
+    padding: 0 min(1vmin, 10px);
+  }

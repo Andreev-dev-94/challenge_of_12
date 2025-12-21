@@ -95,7 +95,7 @@ export const GAME_TEXTS = {
         yourRecord: 'Ваш рекорд:',
         resetRecordButton: 'Сбросить рекорд',
         updating: 'Обновление...',
-        
+
         // 🗑️ ДЛЯ МОДАЛКИ ПОДТВЕРЖДЕНИЯ СБРОСА
         resetConfirmTitle: 'Сброс рекорда',
         resetConfirmQuestion: 'Вы уверены, что хотите сбросить рекорд?',
@@ -104,6 +104,16 @@ export const GAME_TEXTS = {
         resetCurrentScore: (score) => `Текущий рекорд: <strong>${score}</strong> очков`,
         confirmResetButton: 'Да, сбросить',
         cancelResetButton: 'Отмена',
+
+        // Для кнопки рекламы в модалке проигрыша:
+        adExplanation: 'Нажмите кнопку, чтобы посмотреть короткую рекламу и получить +1 звезду для продолжения игры.',
+        getStarButton: 'Получить звезду',
+
+        // Для нового модального окна подтверждения:
+        confirmAdTitle: 'Бонусная звезда',
+        confirmAdText: 'Вы можете посмотреть рекламу и получить +1 звезду один раз за розыгрыш.',
+        confirmGetStar: 'Получить звезду',
+        confirmClose: 'Закрыть',
 
     },
     en: {
@@ -187,29 +197,39 @@ export const GAME_TEXTS = {
         getLifeForAd: 'Get a life for watching an Ad',
 
         btnLeaderbord: 'Leaderboard',
-         // 🏆 ДЛЯ LEADERBOARD MODAL
-         leaderboardTitle: '🏆 Leaderboard',
-         loadingData: 'Loading data...',
-         closeButton: 'Close',
-         refreshTitle: 'Refresh',
-         placeHeader: 'Place',
-         playerHeader: 'Player',
-         pointsHeader: 'Points',
-         anonymous: 'Anonymous',
-         youMarker: ' (You)',
-         noData: 'No data to display',
-         yourPlace: 'Your place:',
-         yourRecord: 'Your record:',
-         resetRecordButton: 'Reset record',
-         updating: 'Updating...',
-         
-         // 🗑️ ДЛЯ МОДАЛКИ ПОДТВЕРЖДЕНИЯ СБРОСА
-         resetConfirmTitle: 'Reset Record',
-         resetConfirmQuestion: 'Are you sure you want to reset your record?',
-         resetConfirmWarning: 'This action cannot be undone. All your results will be deleted.',
-         resetConfirmAffect: '⚠️ This will affect your position on the leaderboard',
-         resetCurrentScore: (score) => `Current record: <strong>${score}</strong> points`,
-         confirmResetButton: 'Yes, reset',
-         cancelResetButton: 'Cancel',
+        // 🏆 ДЛЯ LEADERBOARD MODAL
+        leaderboardTitle: '🏆 Leaderboard',
+        loadingData: 'Loading data...',
+        closeButton: 'Close',
+        refreshTitle: 'Refresh',
+        placeHeader: 'Place',
+        playerHeader: 'Player',
+        pointsHeader: 'Points',
+        anonymous: 'Anonymous',
+        youMarker: ' (You)',
+        noData: 'No data to display',
+        yourPlace: 'Your place:',
+        yourRecord: 'Your record:',
+        resetRecordButton: 'Reset record',
+        updating: 'Updating...',
+
+        // 🗑️ ДЛЯ МОДАЛКИ ПОДТВЕРЖДЕНИЯ СБРОСА
+        resetConfirmTitle: 'Reset Record',
+        resetConfirmQuestion: 'Are you sure you want to reset your record?',
+        resetConfirmWarning: 'This action cannot be undone. All your results will be deleted.',
+        resetConfirmAffect: '⚠️ This will affect your position on the leaderboard',
+        resetCurrentScore: (score) => `Current record: <strong>${score}</strong> points`,
+        confirmResetButton: 'Yes, reset',
+        cancelResetButton: 'Cancel',
+
+        // For ad button in defeat modal:
+        adExplanation: 'Click the button to watch a short ad and get 1 star to continue the game.',
+        getStarButton: 'Get star',
+
+        // For new confirmation modal:
+        confirmAdTitle: 'Bonus Star',
+        confirmAdText: 'You can watch an ad and get +1 star once per game session.',
+        confirmGetStar: 'Get star',
+        confirmClose: 'Close',
     }
 };

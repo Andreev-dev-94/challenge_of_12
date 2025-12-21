@@ -338,36 +338,93 @@
   100% { transform: rotate(360deg); }
 }
 
-/* 1. Базовое правило для всего игрового контейнера и всех его потомков */
-.game-container,
-.game-container * {
-    -webkit-user-select: none !important; /* Safari, iOS, старый Chrome */
-    -moz-user-select: none !important;    /* Firefox */
-    -ms-user-select: none !important;     /* Internet Explorer/Edge */
-    user-select: none !important;         /* Современные браузеры */
-    cursor: default !important;           /* Курсор по умолчанию везде */
+/* Общие стили курсоров для всей игры */
+/* 1. Для всего игрового контейнера - базовый курсор */
+.game-container {
+  cursor: default !important;
 }
 
-/* 2. Явное разрешение выделения для текстовых блоков (если нужно) */
-/* Например, для текста правил, который пользователь может захотеть скопировать */
+/* 2. Для ВСЕХ кнопок - pointer */
+button,
+.refreshButton,
+.neon-ad-btn,
+.start-game-btn,
+[role="button"],
+input[type="button"],
+input[type="submit"] {
+  cursor: pointer !important;
+}
+
+/* 3. Для отключенных кнопок - not-allowed */
+button:disabled,
+.refreshButton:disabled,
+.neon-ad-btn.disabled,
+button[disabled] {
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+/* 4. Для ссылок (если есть) */
+a,
+a:hover,
+a:visited {
+  cursor: pointer !important;
+  text-decoration: none;
+}
+
+/* 5. Для интерактивных элементов (карты, кнопки покупки и т.д.) */
+.card,
+.play-card,
+.buy-button,
+.sale-button,
+.enemy-card,
+.my-card,
+.info-button,
+.leaderboard-button {
+  cursor: pointer !important;
+}
+
+/* 6. Для элементов, которые должны быть text */
+.modalText p,
 .rules-text,
-.modalText,
 .instruction-text {
-    -webkit-user-select: text !important;
-    -moz-user-select: text !important;
-    -ms-user-select: text !important;
-    user-select: text !important;
-    cursor: text !important;
+  cursor: text !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
 }
 
-/* 3. Блокировка "призрачного" изображения при перетаскивании */
-.game-container img,
-.game-container [draggable="true"] {
-    -webkit-user-drag: none !important;
-    pointer-events: none !important; /* Для элементов, которые не должны быть интерактивными */
+/* 7. Убираем выделение для всего остального */
+.game-container *:not(.modalText p):not(.rules-text):not(.instruction-text):not(button):not(.refreshButton):not(.neon-ad-btn):not(.start-game-btn):not([role="button"]):not(a):not(.card):not(.play-card):not(.buy-button):not(.sale-button):not(.enemy-card):not(.my-card):not(.info-button):not(.leaderboard-button) {
+  cursor: default !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
 }
 
-/* 4. Убираем подсветку при тапе на мобильных (опционально, но улучшает UX) */
-.game-container * {
-    -webkit-tap-highlight-color: transparent !important;
+/* 8. Убираем подсветку при клике на мобильных */
+* {
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* 9. Для элементов с hover эффектом */
+button:hover,
+.refreshButton:hover:not(:disabled),
+.neon-ad-btn:hover:not(.disabled),
+.start-game-btn:hover,
+.card:hover,
+.play-card:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+/* 10. Для блокирующего оверлея рекламы */
+.ad-blocking-overlay {
+  cursor: wait !important;
+}
+
+.ad-blocking-overlay * {
+  cursor: wait !important;
 }

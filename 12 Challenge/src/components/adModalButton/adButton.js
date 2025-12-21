@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useYandexSDK from '../../hooks/useYandexSDK';
+import './adButton.css';
 
 const AdButton = ({ setShowGameOver, setLife, roundId, myText }) => {
   const { ysdk, isLoading } = useYandexSDK();
@@ -71,19 +72,22 @@ const AdButton = ({ setShowGameOver, setLife, roundId, myText }) => {
 
   if (roundId < 12) {
     return (
-      <button 
-        className="refreshButton"
-        onClick={handleShowRewardedAd}
-        disabled={isAdLoading}
-        style={{ 
-          cursor: isAdLoading ? 'not-allowed' : 'pointer',
-          opacity: isAdLoading ? 0.6 : 1,
-          display: 'block', // Добавьте это для вертикального расположения
-          margin: '10px auto' // Добавьте это для отступов
-        }}
-      >
-        {isAdLoading ? myText.ads : myText.adsShow}
-      </button>
+      <>
+        <p className="ad-explanation-text">{myText.adExplanation}</p>
+        <button 
+          className="refreshButton"
+          onClick={handleShowRewardedAd}
+          disabled={isAdLoading}
+          style={{ 
+            cursor: isAdLoading ? 'not-allowed' : 'pointer',
+            opacity: isAdLoading ? 0.6 : 1,
+            display: 'block',
+            margin: '10px auto'
+          }}
+        >
+          {isAdLoading ? myText.ads : myText.getStarButton}
+        </button>
+      </>
     );
   }
 

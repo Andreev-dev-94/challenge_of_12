@@ -5,8 +5,9 @@ import useYandexSDK from '../../hooks/useYandexSDK';
 function AdMainButton({ life, setLife, isAdUsed, setIsAdUsed, setIsAdBlocking, myText }) {
   const { ysdk, isLoading } = useYandexSDK();
   const [isAdLoading, setIsAdLoading] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const isProcessingRef = useRef(false);
-  const adShownRef = useRef(false); // Новый реф для отслеживания факта показа
+  const adShownRef = useRef(false);
 
   // Сброс состояния при монтировании
   useEffect(() => {
@@ -31,7 +32,8 @@ function AdMainButton({ life, setLife, isAdUsed, setIsAdUsed, setIsAdBlocking, m
     isProcessingRef.current = true;
     setIsAdLoading(true);
     setIsAdBlocking(true);
-    adShownRef.current = false; // Сбрасываем флаг показа
+    setShowConfirmModal(false); // Закрываем модалку
+    adShownRef.current = false;
 
     try {
       // Проверяем доступность REWARDED рекламы
@@ -41,7 +43,7 @@ function AdMainButton({ life, setLife, isAdUsed, setIsAdUsed, setIsAdBlocking, m
 
       // Создаем промис для обработки REWARDED рекламы
       const adResult = await new Promise((resolve, reject) => {
-        let rewardGranted = false;
+        let rewarded = false; // Единое имя переменной
 
         ysdk.adv.showRewardedVideo({
           callbacks: {
@@ -51,7 +53,7 @@ function AdMainButton({ life, setLife, isAdUsed, setIsAdUsed, setIsAdBlocking, m
             },
             onRewarded: () => {
               console.log('💰 Награда гарантирована!');
-              rewardGranted = true;
+              rewarded = true;
               // ВАЖНО: Выдаем награду НЕМЕДЛЕННО здесь
               if (life < 3) {
                 setLife(prev => Math.min(prev + 1, 3));
@@ -60,9 +62,9 @@ function AdMainButton({ life, setLife, isAdUsed, setIsAdUsed, setIsAdBlocking, m
               }
             },
             onClose: () => {
-              console.log(`✅ Rewarded реклама закрыта. Награда выдана: ${rewardGranted}`);
+              console.log(`✅ Rewarded реклама закрыта. Награда выдана: ${rewarded}`);
               // Разрешаем промис с результатом
-              resolve(rewardGranted);
+              resolve(rewarded);
             },
             onError: (error) => {
               console.error('❌ Ошибка rewarded рекламы:', error);
@@ -103,6 +105,12 @@ function AdMainButton({ life, setLife, isAdUsed, setIsAdUsed, setIsAdBlocking, m
     }
   };
 
+  // Функция для открытия модалки подтверждения
+  const handleOpenConfirmModal = () => {
+    if (isAdLoading || isAdUsed || life >= 3 || !ysdk) return;
+    setShowConfirmModal(true);
+  };
+
   const getTooltipText = () => {
     if (isAdUsed) {
       return myText.adBonusUsed;
@@ -121,22 +129,60 @@ function AdMainButton({ life, setLife, isAdUsed, setIsAdUsed, setIsAdBlocking, m
   const isDisabled = isAdLoading || isAdUsed || life >= 3;
 
   return (
-    <div className='ad_bonus_cont'>
-      <div className="tooltip-container-ad">
-        <button
-          className={`neon-ad-btn ${isDisabled ? 'disabled' : ''}`}
-          onClick={handleShowRewardedAd}
-          disabled={isDisabled}
-        >
-          <span className="neon-icon">🎬</span>
-          <span className="neon-text"></span>
-          <span className="neon-glow"></span>
-        </button>
-        <span className={isAdUsed || life >= 3 ? 'tooltip-text-ad disabled-tooltip' : 'tooltip-text-ad'}>
-          {getTooltipText()}
-        </span>
+    <>
+      <div className='ad_bonus_cont'>
+        <div className="tooltip-container-ad">
+          <button
+            className={`neon-ad-btn ${isDisabled ? 'disabled' : ''}`}
+            onClick={handleOpenConfirmModal}
+            disabled={isDisabled}
+          >
+            <span className="neon-icon">🎬</span>
+            <span className="neon-text"></span>
+            <span className="neon-glow"></span>
+          </button>
+          <span className={isAdUsed || life >= 3 ? 'tooltip-text-ad disabled-tooltip' : 'tooltip-text-ad'}>
+            {getTooltipText()}
+          </span>
+        </div>
       </div>
-    </div>
+
+      {/* Модальное окно подтверждения для главного экрана */}
+      {showConfirmModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modalContent">
+              <h2>{myText.confirmAdTitle}</h2>
+              <div className="modalText">
+                <p>{myText.confirmAdText}</p>
+              </div>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
+                <button 
+                  className="refreshButton"
+                  onClick={handleShowRewardedAd}
+                  disabled={isAdLoading}
+                  style={{ cursor: isAdLoading ? 'not-allowed' : 'pointer' }}
+                >
+                  {myText.confirmGetStar}
+                </button>
+                <button 
+                  className="refreshButton"
+                  onClick={() => setShowConfirmModal(false)}
+                  style={{ 
+                    background: 'transparent',
+                    borderColor: '#666',
+                    color: '#666',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {myText.confirmClose}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
