@@ -186,7 +186,7 @@ export const GAME_TEXTS = {
         maxLivesReached: 'Maximum lives reached',
         getLifeForAd: 'Get a life for watching an Ad',
 
-        btnLeaderbord: 'leaderboard',
+        btnLeaderbord: 'Leaderboard',
          // 🏆 ДЛЯ LEADERBOARD MODAL
          leaderboardTitle: '🏆 Leaderboard',
          loadingData: 'Loading data...',
