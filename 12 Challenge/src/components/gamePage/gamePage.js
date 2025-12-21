@@ -76,6 +76,26 @@ const GamePage = () => {
         }
     }, [isReady, showGameOver]);
 
+
+
+    useEffect(() => {
+        // Функция для блокировки нежелательных событий
+        const blockUnwantedEvents = (e) => {
+            // Блокируем контекстное меню только на игровом поле
+            if (e.target.closest('.game-container')) {
+                e.preventDefault();
+            }
+        };
+    
+        // Добавляем обработчик на весь документ
+        document.addEventListener('contextmenu', blockUnwantedEvents);
+        
+        // Очистка при размонтировании
+        return () => {
+            document.removeEventListener('contextmenu', blockUnwantedEvents);
+        };
+    }, []);
+
     // Обработка окончания игры и обновление рекорда
     useEffect(() => {
         if (gameStatus === 'won' && myScore > 0) {

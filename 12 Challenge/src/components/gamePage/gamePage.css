@@ -337,3 +337,37 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* 1. Базовое правило для всего игрового контейнера и всех его потомков */
+.game-container,
+.game-container * {
+    -webkit-user-select: none !important; /* Safari, iOS, старый Chrome */
+    -moz-user-select: none !important;    /* Firefox */
+    -ms-user-select: none !important;     /* Internet Explorer/Edge */
+    user-select: none !important;         /* Современные браузеры */
+    cursor: default !important;           /* Курсор по умолчанию везде */
+}
+
+/* 2. Явное разрешение выделения для текстовых блоков (если нужно) */
+/* Например, для текста правил, который пользователь может захотеть скопировать */
+.rules-text,
+.modalText,
+.instruction-text {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+    cursor: text !important;
+}
+
+/* 3. Блокировка "призрачного" изображения при перетаскивании */
+.game-container img,
+.game-container [draggable="true"] {
+    -webkit-user-drag: none !important;
+    pointer-events: none !important; /* Для элементов, которые не должны быть интерактивными */
+}
+
+/* 4. Убираем подсветку при тапе на мобильных (опционально, но улучшает UX) */
+.game-container * {
+    -webkit-tap-highlight-color: transparent !important;
+}
