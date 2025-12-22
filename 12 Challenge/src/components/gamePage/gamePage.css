@@ -338,41 +338,11 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Общие стили курсоров для всей игры */
-/* 1. Для всего игрового контейнера - базовый курсор */
-.game-container {
-  cursor: default !important;
-}
-
-/* 2. Для ВСЕХ кнопок - pointer */
+/* ТОЛЬКО курсоры и hover-эффекты */
 button,
 .refreshButton,
 .neon-ad-btn,
 .start-game-btn,
-[role="button"],
-input[type="button"],
-input[type="submit"] {
-  cursor: pointer !important;
-}
-
-/* 3. Для отключенных кнопок - not-allowed */
-button:disabled,
-.refreshButton:disabled,
-.neon-ad-btn.disabled,
-button[disabled] {
-  cursor: not-allowed !important;
-  opacity: 0.6;
-}
-
-/* 4. Для ссылок (если есть) */
-a,
-a:hover,
-a:visited {
-  cursor: pointer !important;
-  text-decoration: none;
-}
-
-/* 5. Для интерактивных элементов (карты, кнопки покупки и т.д.) */
 .card,
 .play-card,
 .buy-button,
@@ -384,32 +354,14 @@ a:visited {
   cursor: pointer !important;
 }
 
-/* 6. Для элементов, которые должны быть text */
-.modalText p,
-.rules-text,
-.instruction-text {
-  cursor: text !important;
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  -moz-user-select: text !important;
-  -ms-user-select: text !important;
+button:disabled,
+.refreshButton:disabled,
+.neon-ad-btn.disabled {
+  cursor: not-allowed !important;
+  opacity: 0.6;
 }
 
-/* 7. Убираем выделение для всего остального */
-.game-container *:not(.modalText p):not(.rules-text):not(.instruction-text):not(button):not(.refreshButton):not(.neon-ad-btn):not(.start-game-btn):not([role="button"]):not(a):not(.card):not(.play-card):not(.buy-button):not(.sale-button):not(.enemy-card):not(.my-card):not(.info-button):not(.leaderboard-button) {
-  cursor: default !important;
-  user-select: none !important;
-  -webkit-user-select: none !important;
-  -moz-user-select: none !important;
-  -ms-user-select: none !important;
-}
-
-/* 8. Убираем подсветку при клике на мобильных */
-* {
-  -webkit-tap-highlight-color: transparent !important;
-}
-
-/* 9. Для элементов с hover эффектом */
+/* Hover-эффекты */
 button:hover,
 .refreshButton:hover:not(:disabled),
 .neon-ad-btn:hover:not(.disabled),
@@ -420,7 +372,7 @@ button:hover,
   transition: transform 0.2s ease;
 }
 
-/* 10. Для блокирующего оверлея рекламы */
+/* Блокирующий оверлей рекламы */
 .ad-blocking-overlay {
   cursor: wait !important;
 }
