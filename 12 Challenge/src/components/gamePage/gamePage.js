@@ -1,6 +1,6 @@
 import './gamePage.css';
 import EnemyPlayField from '../enemyPlayField/enemyPlayField';
-import { useState, useEffect, useRef } from 'react'; // Добавили useRef
+import { useState, useEffect, useRef } from 'react';
 import MyPlayField from '../myPlayField/myPlayField';
 import ScoreBar from '../scoreBar/scoreBar';
 import ArrayEnemyCard from '../arrayEnemyCards/arrayEnemyCards';
@@ -18,18 +18,26 @@ import useGameRecords from '../../hooks/useGameRecords';
 import { GAME_TEXTS } from '../locales/gameTexts';
 
 const GamePage = () => {
-    const { ysdk, isLoading: sdkLoading, playerName, isReady, lang } = useYandexSDK();
-    const myText = GAME_TEXTS[lang] || GAME_TEXTS['ru']; // fallback на русский
-
-    const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+    const { 
+        ysdk, 
+        isLoading: sdkLoading, 
+        playerName, 
+        isReady, 
+        lang,
+        sdkInitialized,
+        notifyGameReady 
+    } = useYandexSDK();
     
-    // 🔧 ИСПРАВЛЕНИЕ: Используем useRef вместо sessionStorage
+    const myText = GAME_TEXTS[lang] || GAME_TEXTS['ru'];
+    
+    const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+    const [gameFullyReady, setGameFullyReady] = useState(false); // Новый флаг: игра реально готова
     const hasShownWelcomeRef = useRef(false);
+    const [assetsLoaded, setAssetsLoaded] = useState(false); // Флаг загрузки ресурсов
 
     const { reloadEnemyCards, array, enemyPlay, createDeck, currentEnemyCard,
         setCurrentEnemyCard, drawRandomCard, setDeck } = ArrayEnemyCard();
 
-    // Используем хук рекордов
     const {
         highScore,
         updateHighScore,
@@ -60,23 +68,97 @@ const GamePage = () => {
     const [isAdBlocking, setIsAdBlocking] = useState(false);
     const [newRecordRank, setNewRecordRank] = useState(null);
     const [showLeaderboard, setShowLeaderboard] = useState(false);
-    const [minLoadingPassed, setMinLoadingPassed] = useState(false);
 
-    // 🔧 ИСПРАВЛЕННЫЙ useEffect для показа приветственного модального окна
+    // 🔧 ЗАГРУЗКА РЕСУРСОВ (изображений, анимаций и т.д.)
     useEffect(() => {
-        // Показываем, если игра готова, не в GameOver и модалка еще не была показана в этом монтировании
-        if (isReady && !showGameOver && !hasShownWelcomeRef.current) {
+        const loadGameAssets = async () => {
+            console.log('🔄 Начало загрузки ресурсов игры...');
+            
+            // Здесь можно загружать изображения, звуки и другие ресурсы
+            const imagesToPreload = [
+                // Добавьте пути к вашим изображениям
+                // '/images/cards/rock.png',
+                // '/images/cards/paper.png',
+                // '/images/cards/scissors.png',
+            ];
+            
+            try {
+                const imagePromises = imagesToPreload.map(url => {
+                    return new Promise((resolve) => {
+                        const img = new Image();
+                        img.src = url;
+                        img.onload = resolve;
+                        img.onerror = resolve; // Продолжаем даже при ошибке
+                    });
+                });
+                
+                await Promise.all(imagePromises);
+                console.log('✅ Все ресурсы игры загружены');
+                setAssetsLoaded(true);
+            } catch (error) {
+                console.warn('⚠️ Ошибка при загрузке ресурсов:', error);
+                setAssetsLoaded(true); // Все равно продолжаем
+            }
+        };
+        
+        loadGameAssets();
+    }, []);
+
+    // 🔧 КЛЮЧЕВОЙ useEffect: определяем, когда игра реально готова
+    useEffect(() => {
+        // Условия готовности игры:
+        // 1. SDK инициализирован
+        // 2. Все ресурсы загружены (или загрузка пропущена)
+        // 3. SDK еще не сообщил о готовности (isReady === false)
+        // 4. Нет ошибок загрузки SDK
+        if (sdkInitialized && assetsLoaded && !isReady && !sdkLoading) {
+            console.log('🎮 Игра реально готова к взаимодействию!');
+            console.log('- SDK инициализирован:', sdkInitialized);
+            console.log('- Ресурсы загружены:', assetsLoaded);
+            console.log('- SDK ready() еще не вызывался:', !isReady);
+            
+            // Устанавливаем флаг, что игра готова для нашего UI
+            setGameFullyReady(true);
+            
+            // 🔥 ВАЖНО: Теперь вызываем GameReady API - когда игра ДЕЙСТВИТЕЛЬНО готова
+            const callGameReady = async () => {
+                try {
+                    const success = await notifyGameReady();
+                    if (success) {
+                        console.log('✅ GameReady API вызван КОРРЕКТНО в момент, когда игра доступна для взаимодействия');
+                    } else {
+                        console.warn('⚠️ GameReady API не удалось вызвать');
+                    }
+                } catch (error) {
+                    console.error('❌ Ошибка при вызове GameReady API:', error);
+                }
+            };
+            
+            // Небольшая задержка для гарантии, что UI успел обновиться
             const timer = setTimeout(() => {
-                setShowWelcomeModal(true);
-                hasShownWelcomeRef.current = true; // Помечаем как показанную
-                console.log('✅ Приветственная модалка показана (первый раз после монтирования)');
-            }, 500); // Небольшая задержка
+                callGameReady();
+            }, 100);
             
             return () => clearTimeout(timer);
         }
-    }, [isReady, showGameOver]);
+    }, [sdkInitialized, assetsLoaded, isReady, sdkLoading, notifyGameReady]);
 
-
+    // 🔧 Показ приветственного модального окна (только после готовности игры)
+    useEffect(() => {
+        // Показываем приветствие только когда:
+        // 1. Игра полностью готова (gameFullyReady)
+        // 2. Не в состоянии GameOver
+        // 3. Еще не показывали в этой сессии
+        if (gameFullyReady && !showGameOver && !hasShownWelcomeRef.current) {
+            const timer = setTimeout(() => {
+                setShowWelcomeModal(true);
+                hasShownWelcomeRef.current = true;
+                console.log('👋 Приветственная модалка показана (игра готова)');
+            }, 500);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [gameFullyReady, showGameOver]);
 
     useEffect(() => {
         // Функция для блокировки нежелательных событий
@@ -161,7 +243,7 @@ const GamePage = () => {
     };
 
     const resetGame = () => {
-        setShowWelcomeModal(false); // Только скрываем модалку, не сбрасываем ref
+        setShowWelcomeModal(false);
         resetMyCards();
         reloadEnemyCards();
         setGameStatus(null);
@@ -192,23 +274,33 @@ const GamePage = () => {
         setShowLeaderboard(false);
     };
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setMinLoadingPassed(true);
-        }, 3000); // 3000 мс = 3 секунды
-        return () => clearTimeout(timer); // Очистка при размонтировании
-    }, []);
-
-    // Показываем лоадер, если SDK не готов ИЛИ не прошло 3 секунды
-    if (!isReady || !minLoadingPassed) {
+    // 🔧 ОТОБРАЖЕНИЕ ЛОАДЕРА ПОКА ИГРА НЕ ГОТОВА
+    // Показываем лоадер до тех пор, пока игра не станет реально готовой
+    if (!gameFullyReady || sdkLoading) {
         return (
             <div className="fullscreen-loader">
                 <div className="loader-spinner"></div>
                 <p>{myText.loading}</p>
+                <div style={{ 
+                    marginTop: '20px', 
+                    fontSize: '14px', 
+                    color: '#888' 
+                }}>
+                    Загрузка игры...
+                    <div style={{ 
+                        marginTop: '10px',
+                        fontSize: '12px' 
+                    }}>
+                        {!sdkInitialized && 'Инициализация платформы...'}
+                        {sdkInitialized && !assetsLoaded && 'Загрузка ресурсов...'}
+                        {sdkInitialized && assetsLoaded && 'Подготовка игрового поля...'}
+                    </div>
+                </div>
             </div>
         );
     }
 
+    // 🔧 ИГРА РЕАЛЬНО ГОТОВА - отображаем основной интерфейс
     return (
         <div className="game-container">
             {/* Блокирующий оверлей для рекламы */}
@@ -294,13 +386,18 @@ const GamePage = () => {
                                     </div>
                                 )}
                             </div>
-                            <AdButton
-                                setShowGameOver={setShowGameOver}
-                                setLife={setLife}
-                                roundId={roundId}
-                                myText={myText}
-                            />
-                            <button className="refreshButton" onClick={resetGame}>
+                            
+                            {/* Кнопка рекламы для продолжения игры (только при проигрыше) */}
+                            {gameStatus === 'lost' && (
+                                <AdButton
+                                    setShowGameOver={setShowGameOver}
+                                    setLife={setLife}
+                                    roundId={roundId}
+                                    myText={myText}
+                                />
+                            )}
+                            
+                            <button className="refreshButton" onClick={resetGame} style={{ cursor: 'pointer' }}>
                                 {myText.newGameButton}
                             </button>
                         </div>
@@ -382,8 +479,9 @@ const GamePage = () => {
             />
 
             <LeaderboardButton 
-            onShowLeaderboard={handleOpenLeaderboard} 
-            myText={myText}/>
+                onShowLeaderboard={handleOpenLeaderboard} 
+                myText={myText}
+            />
         </div>
     )
 }

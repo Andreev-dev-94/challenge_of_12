@@ -4,51 +4,28 @@ const useYandexSDK = () => {
     const [ysdk, setYsdk] = useState(null);
     const [playerName, setPlayerName] = useState('Игрок');
     const [isLoading, setIsLoading] = useState(true);
-    const [isReady, setIsReady] = useState(false); // Новый флаг: SDK инициализирован И вызван ready()
+    const [isReady, setIsReady] = useState(false);
     const [lang, setLang] = useState('ru');
+    const [sdkInitialized, setSdkInitialized] = useState(false); // Новый флаг
 
     useEffect(() => {
         const initSDK = async () => {
             if (typeof window.YaGames === 'undefined') {
                 console.warn('SDK Яндекс Игр (YaGames) не загружен.');
+                // Для локальной разработки - сразу готовим
+                setIsReady(true);
                 setIsLoading(false);
                 return;
             }
 
             try {
-                // 1. Инициализируем SDK
+                // 1. ТОЛЬКО инициализация SDK
                 const sdk = await window.YaGames.init();
                 console.log('✅ Яндекс SDK инициализирован.');
-
-                // 1. Получаем код языка от платформы
-                const platformLang = sdk.environment?.i18n?.lang || 'ru';
-                console.log('🌐 Код языка от платформы:', platformLang);
-
-                // 2. Логика выбора языка игры
-                let gameLang;
-                const ruLangCodes = ['ru', 'be', 'uk']; // Русский, белорусский, украинский
-                if (ruLangCodes.includes(platformLang)) {
-                    gameLang = 'ru'; // Для СНГ - русский
-                } else {
-                    gameLang = 'en'; // Для всех остальных - английский
-                }
-
-                // 3. Сохраняем выбранный язык
-                setLang(gameLang);
-                console.log('✅ Установлен язык игры:', gameLang);
-
-
                 setYsdk(sdk);
+                setSdkInitialized(true); // SDK готов, но НЕ игра
 
-                // 2. НЕМЕДЛЕННО сообщаем платформе, что игра готова
-                // Это БЛОКИРУЮЩИЙ вызов. До его завершения игра не должна показываться.
-                if (sdk.features?.LoadingAPI?.ready) {
-                    await sdk.features.LoadingAPI.ready();
-                    console.log('✅ LoadingAPI.ready() вызван. Игра официально готова для платформы.');
-                    setIsReady(true); // Критически важный флаг!
-                }
-
-                // 3. Фоново получаем данные игрока (после ready())
+                // 2. Фоново получаем данные игрока (не блокируем ready)
                 try {
                     const player = await sdk.getPlayer();
                     const name = await player.getName();
@@ -58,18 +35,55 @@ const useYandexSDK = () => {
                     console.warn('Не удалось получить имя игрока:', playerError);
                 }
 
+                // 3. Определение языка
+                const platformLang = sdk.environment?.i18n?.lang || 'ru';
+                const ruLangCodes = ['ru', 'be', 'uk'];
+                let gameLang = 'ru';
+                if (!ruLangCodes.includes(platformLang)) {
+                    gameLang = 'en';
+                }
+                setLang(gameLang);
+                console.log('🌐 Язык игры:', gameLang);
+
             } catch (error) {
-                console.error('❌ Критическая ошибка при инициализации SDK:', error);
+                console.error('❌ Ошибка при инициализации SDK:', error);
+                // Даже при ошибке даем возможность играть
+                setIsReady(true);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        // Инициализируем немедленно, без задержек
         initSDK();
     }, []);
 
-    return { ysdk, playerName, isLoading, isReady, lang };// Возвращаем isReady
+    // НОВАЯ ФУНКЦИЯ: вызывайте её, когда игра реально готова
+    const notifyGameReady = async () => {
+        if (!ysdk || !sdkInitialized || isReady) return;
+        
+        try {
+            if (ysdk.features?.LoadingAPI?.ready) {
+                console.log('🎮 Вызываем LoadingAPI.ready() - игра Готова!');
+                await ysdk.features.LoadingAPI.ready();
+                console.log('✅ Игра официально доступна для платформы');
+                setIsReady(true);
+                return true;
+            }
+        } catch (error) {
+            console.error('Ошибка при вызове ready():', error);
+        }
+        return false;
+    };
+
+    return { 
+        ysdk, 
+        playerName, 
+        isLoading, 
+        isReady, 
+        lang,
+        sdkInitialized,
+        notifyGameReady // Экспортируем функцию
+    };
 };
 
 export default useYandexSDK;
